@@ -1,0 +1,541 @@
+    <?php require_once('../Connections/quality.php'); ?>
+    <?php
+    if (!isset($_SESSION)) {
+      session_start();
+    }
+    $MM_authorizedUsers = "1";
+    $MM_donotCheckaccess = "false";
+
+    // *** Restrict Access To Page: Grant or deny access to this page
+    function isAuthorized($strUsers, $strGroups, $UserName, $UserGroup) { 
+      // For security, start by assuming the visitor is NOT authorized. 
+      $isValid = False; 
+
+      // When a visitor has logged into this site, the Session variable MM_Username set equal to their username. 
+      // Therefore, we know that a user is NOT logged in if that Session variable is blank. 
+      if (!empty($UserName)) { 
+        // Besides being logged in, you may restrict access to only certain users based on an ID established when they login. 
+        // Parse the strings into arrays. 
+        $arrUsers = Explode(",", $strUsers); 
+        $arrGroups = Explode(",", $strGroups); 
+        if (in_array($UserName, $arrUsers)) { 
+          $isValid = true; 
+        } 
+        // Or, you may restrict access to only certain users based on their username. 
+        if (in_array($UserGroup, $arrGroups)) { 
+          $isValid = true; 
+        } 
+        if (($strUsers == "") && false) { 
+          $isValid = true; 
+        } 
+      } 
+      return $isValid; 
+    }
+
+    $MM_restrictGoTo = "acceso.php";
+    if (!((isset($_SESSION['MM_Username'])) && (isAuthorized("",$MM_authorizedUsers, $_SESSION['MM_Username'], $_SESSION['MM_UserGroup'])))) {   
+      $MM_qsChar = "?";
+      $MM_referrer = $_SERVER['PHP_SELF'];
+      if (strpos($MM_restrictGoTo, "?")) $MM_qsChar = "&";
+      if (isset($_SERVER['QUERY_STRING']) && strlen($_SERVER['QUERY_STRING']) > 0) 
+      $MM_referrer .= "?" . $_SERVER['QUERY_STRING'];
+      $MM_restrictGoTo = $MM_restrictGoTo. $MM_qsChar . "accesscheck=" . urlencode($MM_referrer);
+      header("Location: ". $MM_restrictGoTo); 
+      exit;
+    }
+    ?>
+    <?php
+    if (!function_exists("GetSQLValueString")) {
+    function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
+    {
+      if (PHP_VERSION < 6) {
+        $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
+      }
+
+      $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
+
+      switch ($theType) {
+        case "text":
+          $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
+          break;    
+        case "long":
+        case "int":
+          $theValue = ($theValue != "") ? intval($theValue) : "NULL";
+          break;
+        case "double":
+          $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
+          break;
+        case "date":
+          $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
+          break;
+        case "defined":
+          $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
+          break;
+      }
+      return $theValue;
+    }
+    }
+
+    require_once('../data/roles.php');
+    $menu = side_menu($_SESSION['MM_UserGroup']);
+    require_once('../data/menus/'.$menu);
+
+    mysql_select_db($database_quality, $quality);
+  $query_id_usuario = "SELECT empleados.id FROM empleados WHERE empleados.usuario = '".$_SESSION['MM_Username']."'";
+  $id_usuario = mysql_query($query_id_usuario, $quality);
+  $row_id_usuario = mysql_fetch_assoc($id_usuario);
+
+    mysql_query("SET lc_time_names = 'es_ES'", $quality);
+    $query_mensajes = "SELECT mensajes_internos.id, mensajes_internos.id_sender, mensajes_internos.subject, mensajes_internos.message, mensajes_internos.readed, CONCAT(SUBSTRING_INDEX(empleados.nombre,' ',1),' ',SUBSTRING_INDEX(empleados.apellido,' ',1)) AS sender, DATE_FORMAT(mensajes_internos.fecha, '%h:%i') AS hora, DATE_FORMAT(mensajes_internos.fecha, '%p') AS pm_am,  DATE_FORMAT(mensajes_internos.fecha, '%W') AS dia, EXTRACT(day FROM TIMEDIFF(NOW(), mensajes_internos.fecha)) AS dias FROM mensajes_internos INNER JOIN empleados ON mensajes_internos.id_sender = empleados.id WHERE mensajes_internos.id_receiver = '".$row_id_usuario['id']."' ORDER BY mensajes_internos.fecha DESC LIMIT 3";
+    $mensajes = mysql_query($query_mensajes, $quality) or die(mysql_error());
+
+    $query_posiciones = "SELECT id as value, posicion FROM posiciones_clientes ORDER BY posicion";
+    $posiciones = mysql_query($query_posiciones, $quality) or die (mysql_error());
+
+    $opt_posicion = "";
+
+    while ($row_posiciones = mysql_fetch_array($posiciones)) {
+        $opt_posicion .= "<option value=\"$row_posiciones[value]\">$row_posiciones[posicion]</option>";
+    }
+ 
+
+    $rnc_dinamico = "<div class=\"row\" id=\"contenido_empresa\" style=\"padding: 20px 0;\"></div>";
+    $rnc_manual = "<div class=\"row\" style=\"padding: 15px 0px;\"><div class=\"col-md-6\"><label>Nombre del Cliente</label><div><input type=\"text\" id=\"nombre_cliente\" name=\"nombre_cliente\" class=\"form-control\" placeholder=\"Nombre de la persona que cotiza\"></div></div><div class=\"col-md-6\"><label>Posición cliente</label><div style=\"margin-bottom: 30px;\"><select  id=\"posicion_cliente\" name=\"posicion_cliente\" class=\"form-control\">$opt_posicion</select></div></div> <div class=\"col-md-6\"><label>Empresa o Persona Jurídica</label><div><input type=\"text\" id=\"empresa_cliente\" name=\"empresa_cliente\" class=\"form-control\" placeholder=\"Empresa que cotiza\"></div></div></div><div class=\"row\"><div class=\"col-md-12\"><label>Dirección</label></div></div><div class=\"col-md-6\"><label><small>Calle</small></label><input type=\"text\" id=\"calle_cliente\" name=\"calle_cliente\" class=\"form-control\" placeholder=\"Calle\"></div><div class=\"col-md-1\"><label><small>Numero</small></label><input type=\"text\" id=\"numero_cliente\" name=\"numero_cliente\" class=\"form-control\" placeholder=\"Num\"></div><div class=\"col-md-4\" style=\"margin-bottom: 21px;\">  <label>&nbsp;</label>  <div>&nbsp;</div></div><div class=\"col-md-4\"><label><small>Sector</small></label><input type=\"text\" id=\"sector_cliente\" name=\"sector_cliente\" class=\"form-control\" placeholder=\"Sector\"></div>";
+    $rnc_manual .= "<div class=\"col-md-4\"><label><small>Teléfono</small></label><input type=\"text\" id=\"telefono_cliente\" name=\"telefono_cliente\" class=\"form-control\" placeholder=\"Teléfono\"></div><div class=\"row\" style=\"margin-bottom: 15px;\">&nbsp;</div><div class=\"row\"><div class=\"col-md-6\"><label>Email</label><input type=\"text\" id=\"email_cliente\" name=\"email_cliente\" class=\"form-control\" placeholder=\"Email\"></div><div class=\"col-md-6\"><label>Website</label><input type=\"text\" id=\"website_cliente\" name=\"website_cliente\" class=\"form-control\" placeholder=\"Website Cliente\"></div></div>";
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>QGBgroup :: CRM ::</title>
+
+        <!-- Bootstrap Core CSS -->
+        <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+        
+        <!-- Roperto's CSS -->
+        
+        <link href="../css/roperto.css" rel="stylesheet">
+
+        <!-- MetisMenu CSS -->
+        <link href="../bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet">
+
+        <!-- Timeline CSS -->
+        <link href="../dist/css/timeline.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
+
+        <!-- Custom Fonts -->
+        <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+        <link rel="stylesheet" type="text/css" href="../select2/dist/css/select2.css">
+        
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        
+        <style>
+            .panel { box-shadow: 10px 10px 20px -8px grey; }
+        </style> 
+
+    </head>
+
+    <body>
+
+        <div id="wrapper">
+
+            <!-- Navigation -->
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="panel_administrador.php">&nbsp;</a>
+                </div>
+                <!-- /.navbar-header -->
+
+                <ul class="nav navbar-top-links navbar-right">
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="fa fa-envelope fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-messages">
+                          <?php
+                            while ($row = mysql_fetch_assoc($mensajes)) {
+                              switch ($row['dias']) {
+                                case '0':
+                                  $fecha_msg = $row['hora']." ".strtolower($row['pm_am']);
+                                  break;
+                                case '1':
+                                  $fecha_msg = "Ayer";
+                                  break;
+                                default:
+                                  $fecha_msg = ucfirst($row['dia']);
+                                  break;
+                              }
+                              $sep = 1;
+
+                              ?>
+                            <li>
+                                <a href="msg_int.php?msg=<?php echo $row['id']; ?>">
+                                <!--<a href="mensaje_interno_recibido.php">-->
+                                    <div>
+                                        <img src="../recursos/agentes/<?php echo $row['id_sender'];?>.jpg" style="width:15%; height:15%; margin-bottom:-38px;" class="img img-responsive img-circle" /><span class="pull-right text-muted">
+                                            <em style="margin-left: 46px;"><?php echo $fecha_msg;?></em>
+                                        </span>
+                                        <strong style="margin-left: 46px;"><?php echo ucwords(strtolower($row['sender']));?></strong>
+                                    </div>
+                                    <div style="margin-left: 46px;"><?php echo $row['subject'];?></div>
+                                </a>
+                            </li>
+                            <?php if($sep<3){ ?>
+                            <li class="divider"></li>
+                            <?php $sep++;
+                            } ?>
+                            <?php } ?>
+
+                            <li>
+                                <a class="text-center" href="bandeja_entrada.php">
+                                    <strong>Read All Messages</strong>
+                                    <i class="fa fa-angle-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                        <!-- /.dropdown-messages -->
+                    </li>
+                    <!-- /.dropdown -->
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="fa fa-tasks fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-tasks">
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <p>
+                                            <strong>Task 1</strong>
+                                            <span class="pull-right text-muted">40% Complete</span>
+                                        </p>
+                                        <div class="progress progress-striped active">
+                                            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 40%">
+                                                <span class="sr-only">40% Complete (success)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <p>
+                                            <strong>Task 2</strong>
+                                            <span class="pull-right text-muted">20% Complete</span>
+                                        </p>
+                                        <div class="progress progress-striped active">
+                                            <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
+                                                <span class="sr-only">20% Complete</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <p>
+                                            <strong>Task 3</strong>
+                                            <span class="pull-right text-muted">60% Complete</span>
+                                        </p>
+                                        <div class="progress progress-striped active">
+                                            <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%">
+                                                <span class="sr-only">60% Complete (warning)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <p>
+                                            <strong>Task 4</strong>
+                                            <span class="pull-right text-muted">80% Complete</span>
+                                        </p>
+                                        <div class="progress progress-striped active">
+                                            <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
+                                                <span class="sr-only">80% Complete (danger)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a class="text-center" href="#">
+                                    <strong>See All Tasks</strong>
+                                    <i class="fa fa-angle-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                        <!-- /.dropdown-tasks -->
+                    </li>
+                    <!-- /.dropdown -->
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="fa fa-bell fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-alerts">
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <i class="fa fa-comment fa-fw"></i> New Comment
+                                        <span class="pull-right text-muted small">4 minutes ago</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <i class="fa fa-twitter fa-fw"></i> 3 New Followers
+                                        <span class="pull-right text-muted small">12 minutes ago</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <i class="fa fa-envelope fa-fw"></i> Message Sent
+                                        <span class="pull-right text-muted small">4 minutes ago</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <i class="fa fa-tasks fa-fw"></i> New Task
+                                        <span class="pull-right text-muted small">4 minutes ago</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#">
+                                    <div>
+                                        <i class="fa fa-upload fa-fw"></i> Server Rebooted
+                                        <span class="pull-right text-muted small">4 minutes ago</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a class="text-center" href="#">
+                                    <strong>See All Alerts</strong>
+                                    <i class="fa fa-angle-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                        <!-- /.dropdown-alerts -->
+                    </li>
+                    <!-- /.dropdown -->
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-user">
+                            <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                            </li>
+                            <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li><a href="logout.php"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                            </li>
+                        </ul>
+                        <!-- /.dropdown-user -->
+                    </li>
+                    <!-- /.dropdown -->
+                </ul>
+                <!-- /.navbar-top-links -->
+                
+                <?php echo $menu_lateral; ?>
+                <!-- /.navbar-static-side -->
+            </nav>
+
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header"><i class=" fa-graduation-cap fa fa-lg"></i> Cotizar Capacitaciones</h1>
+                    </div>
+                    <!-- /.col-lg-12 -->
+                </div>
+                <div class="row" >
+                	<div class="col-lg-12">
+                        <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    Formulario de Cotizaciones
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <label>RNC</label>
+                                            <input type="text" maxlength="11" id="rnc" name="rnc" class="form-control" placeholder="RNC o Cedula">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>&nbsp;</label>
+                                            <div>
+                                                <button type="button" class="btn btn-danger" id="alternar_entrada">Entrada Manual</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="dinamico">
+                                        <?php echo $rnc_dinamico; ?>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-4">
+                                            <label>Empresa</label>
+                                            <select name="empresa" id="empresa" class="form-control">
+                                                <option value="0" selected disabled>Seleccione Una empresa</option>
+                                                <option value="1">Quality Global Business</option>
+                                                <option value="2">MEXE</option>
+                                                <option value="3">Mits</option>
+                                                <option value="4">Six Sigma Development Group</option>
+                                                <option value="10">Escuela de Idiomas Egbert Morrison</option>
+                                                <option value="11">Instituto de Seguros</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="input_fields_wrap">
+                                        <button class="add_field_button btn btn-success" style="margin-bottom: 20px;" disabled id="agregar_cap">Agregar Capacitaciones</button>
+                                        
+                                    </div>
+                                    <div class="row" style="margin-top: 20px;">
+                                        <div class="col-md-2 col-md-offset-9"><button class="btn btn-success">Enviar Cotización <i class="fa fa-w fa-envelope-o"></i></button></div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /#page-wrapper -->
+
+        </div>
+        <!-- /#wrapper -->
+
+        <!-- jQuery -->
+        <script language="javascript" src="../jQueryAssets/jquery-1.11.1.min.js"></script>
+
+        <!-- Bootstrap Core JavaScript -->
+        <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+        <!-- Metis Menu Plugin JavaScript -->
+        <script src="../bower_components/metisMenu/dist/metisMenu.min.js"></script>
+        <script type="text/javascript" src="../select2/dist/js/select2.js"></script>
+
+        <script>
+            function contenido_dinamico(){
+                $('#rnc').keyup(function() {
+                    var chars = $(this).val().length;
+                    var textoBusqueda = $("input#rnc").val();
+                    if((chars==9) || (chars == 11)){
+                        $.post("../data/buscarrnc.php", {valorBusqueda: textoBusqueda}, function(mensaje){
+                            $("#contenido_empresa").html(mensaje);
+                            $("#posicion_cliente").html('<?php echo $opt_posicion;?>');
+                            $("#posicion_cliente").select2();
+                        });
+                    }else{
+                        $("#contenido_empresa").html("<div class='col-md-5'><label>RNC Incompleto</label></div>");
+                    }
+                });
+            }
+            function area_cursos(curso, empresa){
+                $("#area"+curso).change(function (e) {
+                     id_busqueda = $(this).val();
+                     $.post("../data/CursosCot.php", {id_busqueda : id_busqueda, empresa : empresa}, function (data) {
+                          $("#capacitacion"+curso).html(data); 
+                     });
+                });
+            }
+            $(document).ready(function() {
+                contenido_dinamico();
+
+                var toggleState = true;
+
+                $('#alternar_entrada').click(function(event) {
+                    if(toggleState){
+                        $("#dinamico").html('<?php echo $rnc_manual; ?>');
+                        $("#posicion_cliente").select2();
+                        $(this).text('Entrada Dinamica');
+                        $(this).removeClass("btn-danger");
+                        $(this).addClass("btn-success");
+                    }else{
+                        $("#dinamico").html('<?php echo $rnc_dinamico; ?>');
+                        $(this).text('Entrada Manual');
+                        $(this).removeClass("btn-success");
+                        $(this).addClass("btn-danger");
+                    }
+                     toggleState = !toggleState;
+                });
+                var cont_areas;
+                var cont_empresa;
+                $("#empresa").change(function(event) {
+                     var empresa = $(this).val();
+                     cont_empresa = empresa;
+                     $.post('../data/areas_cot.php', {empresa: empresa}, function(data) {
+                         cont_areas = data;
+                         $("#agregar_cap").prop('disabled', false);                          
+                     });
+
+                 });
+
+
+
+                var max_fields   = 12;
+                var wrapper      = $(".input_fields_wrap");
+                var add_button   = $(".add_field_button");
+
+                var x = 0;
+                $(add_button).click(function(e){
+                    e.preventDefault();
+                    if(x < max_fields){
+                    
+                    $(wrapper).append('<div class="row" style="margin-top: 10px;"><div class="col-md-2"><select id="area'+x+'" class="form-control areaselect">'+cont_areas+'</select></div><div class="col-md-6"><select name="capacitacion['+x+']" id="capacitacion'+x+'" class="form-control"><option>Elija un area</option></select></div><div class="col-md-1">precio?</div><div class="col-md-1"><select id="desc'+x+'" class="form-control" name="desc['+x+']">Descuento</select></div><button class="remove_field btn btn-danger"><i class="fa fa-w fa-trash-o"></i></button></div>');
+                    area_cursos(x,cont_empresa);
+                    x++;
+                }
+            });
+
+            $(wrapper).on("click",".remove_field", function(e){
+                e.preventDefault();
+                $(this).parent('div').remove(); x--;
+            })
+        });
+        </script>
+        <!-- Custom Theme JavaScript -->
+        <script src="../dist/js/sb-admin-2.js"></script>
+    	<!-- Scripts de Ivan Roperto -->
+        <script src="../js/functions.js"></script>
+    </body>
+
+    </html>
+    <?php
+    mysql_free_result($mensajes);
+    ?>

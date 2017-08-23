@@ -1,0 +1,1 @@
+﻿<?xml version="1.0" encoding="utf-8" ?><info>	<infoitem key="UD_mensajes" value="name:id;datatype:int,name:agente;datatype:int,name:fecha;datatype:datetime,name:comentario;datatype:blob" /></info>

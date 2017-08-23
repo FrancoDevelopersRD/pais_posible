@@ -1,0 +1,13 @@
+@charset "UTF-8";
+/* CSS Document */
+
+.navbar-brand{
+	background: url(../img/logo_min.png);
+	display: block;
+	width: 120px;
+	height: 36px;
+	background-size: 100%;
+    margin: 10px 0 0 20px;
+}
+
+tbody tr td:nth-child(1), tbody tr td:nth-child(2)  {text-transform: capitalize!important;}
