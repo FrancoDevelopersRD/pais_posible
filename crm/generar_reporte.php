@@ -69,7 +69,7 @@ $margen_vertical_inicial2 = 50;
 $margen_vertical_sumatorio2 = 0;
 $margen_vertical_inicial3 = 50;
 $margen_vertical_sumatorio3 = 0;
-$margen_check = 48;
+$margen_check = 73;
 
 $margen_vertical_inicial4 = 50;
 $margen_vertical_sumatorio4 = 0;
@@ -98,7 +98,7 @@ $pdf->Image('checkbox.png',65,$margen_check+$margen_vertical_sumatorio,7);
 $pdf->Image($query_carnet2['foto'],10,50+$margen_vertical_sumatorio,18);
 $pdf->SetY($margen_vertical_inicial+$margen_vertical_sumatorio);
 $pdf->SetX(29);
-$pdf->MultiCell(102,5,$cedula_completa.utf8_decode('          VOTÓ'),0,'L',false);
+$pdf->MultiCell(102,5,$cedula_completa.'      PP'.$query_carnet2['id'],0,'L',false);
 $pdf->SetX(29);
 $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['nombres'])),0,'L',false);
 $pdf->SetX(29);
@@ -106,9 +106,9 @@ $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['apellidos'])),0,'L'
 $pdf->SetX(10);
 $pdf->MultiCell(102,5,'PROVINCIA: '.utf8_decode(strtoupper($query_provincia['provincia'])),0,'L',false);
 $pdf->SetX(10);
-$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])),0,'L',false);
+$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])).utf8_decode('                            VOTÓ'),0,'L',false);
 $pdf->SetX(10);
-$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                              FIRMA',0,'L',false);
+$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio = $margen_vertical_sumatorio + 30;
 }
     if($contador>6 AND $contador<14){
@@ -126,7 +126,7 @@ $pdf->Image('checkbox.png',128,$margen_check+$margen_vertical_sumatorio2,7);
 $pdf->Image($query_carnet2['foto'],73,50+$margen_vertical_sumatorio2,18);
 $pdf->SetY($margen_vertical_inicial2+$margen_vertical_sumatorio2);
 $pdf->SetX(92);
-$pdf->MultiCell(102,5,$cedula_completa.utf8_decode('          VOTÓ'),0,'L',false);
+$pdf->MultiCell(102,5,$cedula_completa.'      PP'.$query_carnet2['id'],0,'L',false);
 $pdf->SetX(92);
 $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['nombres'])),0,'L',false);
 $pdf->SetX(92);
@@ -134,9 +134,9 @@ $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['apellidos'])),0,'L'
 $pdf->SetX(73);
 $pdf->MultiCell(102,5,'PROVINCIA: '.utf8_decode(strtoupper($query_provincia['provincia'])),0,'L',false);
 $pdf->SetX(73);
-$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])),0,'L',false);
+$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])).utf8_decode('                            VOTÓ'),0,'L',false);
 $pdf->SetX(73);
-$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                              FIRMA',0,'L',false);
+$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio2 = $margen_vertical_sumatorio2 + 30;
 }
 if($contador>13 AND $contador<21){
@@ -154,7 +154,7 @@ $pdf->Image('checkbox.png',191,$margen_check+$margen_vertical_sumatorio3,7);
 $pdf->Image($query_carnet2['foto'],136,50+$margen_vertical_sumatorio3,18);
 $pdf->SetY($margen_vertical_inicial3+$margen_vertical_sumatorio3);
 $pdf->SetX(155);
-$pdf->MultiCell(102,5,$cedula_completa.utf8_decode('          VOTÓ'),0,'L',false);
+$pdf->MultiCell(102,5,$cedula_completa.'      PP'.$query_carnet2['id'],0,'L',false);
 $pdf->SetX(155);
 $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['nombres'])),0,'L',false);
 $pdf->SetX(155);
@@ -162,9 +162,9 @@ $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['apellidos'])),0,'L'
 $pdf->SetX(136);
 $pdf->MultiCell(102,5,'PROVINCIA: '.utf8_decode(strtoupper($query_provincia['provincia'])),0,'L',false);
 $pdf->SetX(136);
-$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])),0,'L',false);
+$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])).utf8_decode('                            VOTÓ'),0,'L',false);
 $pdf->SetX(136);
-$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                              FIRMA',0,'L',false);
+$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio3 = $margen_vertical_sumatorio3 + 30;
 }
 //Fin de Primera Página
@@ -189,7 +189,7 @@ $pdf->Image('checkbox.png',65,$margen_check+$margen_vertical_sumatorio4,7);
 $pdf->Image($query_carnet2['foto'],10,50+$margen_vertical_sumatorio4,18);
 $pdf->SetY($margen_vertical_inicial4+$margen_vertical_sumatorio4);
 $pdf->SetX(29);
-$pdf->MultiCell(102,5,$cedula_completa.utf8_decode('          VOTÓ'),0,'L',false);
+$pdf->MultiCell(102,5,$cedula_completa.'      PP'.$query_carnet2['id'],0,'L',false);
 $pdf->SetX(29);
 $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['nombres'])),0,'L',false);
 $pdf->SetX(29);
@@ -197,9 +197,9 @@ $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['apellidos'])),0,'L'
 $pdf->SetX(10);
 $pdf->MultiCell(102,5,'PROVINCIA: '.utf8_decode(strtoupper($query_provincia['provincia'])),0,'L',false);
 $pdf->SetX(10);
-$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])),0,'L',false);
+$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])).utf8_decode('                            VOTÓ'),0,'L',false);
 $pdf->SetX(10);
-$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                              FIRMA',0,'L',false);
+$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio4 = $margen_vertical_sumatorio4 + 30;
 }
 if($contador>27 AND $contador<35){
@@ -217,7 +217,7 @@ $pdf->Image('checkbox.png',128,$margen_check+$margen_vertical_sumatorio5,7);
 $pdf->Image($query_carnet2['foto'],73,50+$margen_vertical_sumatorio5,18);
 $pdf->SetY($margen_vertical_inicial5+$margen_vertical_sumatorio5);
 $pdf->SetX(92);
-$pdf->MultiCell(102,5,$cedula_completa.utf8_decode('          VOTÓ'),0,'L',false);
+$pdf->MultiCell(102,5,$cedula_completa.'      PP'.$query_carnet2['id'],0,'L',false);
 $pdf->SetX(92);
 $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['nombres'])),0,'L',false);
 $pdf->SetX(92);
@@ -225,9 +225,9 @@ $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['apellidos'])),0,'L'
 $pdf->SetX(73);
 $pdf->MultiCell(102,5,'PROVINCIA: '.utf8_decode(strtoupper($query_provincia['provincia'])),0,'L',false);
 $pdf->SetX(73);
-$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])),0,'L',false);
+$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])).utf8_decode('                            VOTÓ'),0,'L',false);
 $pdf->SetX(73);
-$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                              FIRMA',0,'L',false);
+$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio5 = $margen_vertical_sumatorio5 + 30;
 }
 if($contador>34 AND $contador<42){
@@ -245,7 +245,7 @@ $pdf->Image('checkbox.png',191,$margen_check+$margen_vertical_sumatorio6,7);
 $pdf->Image($query_carnet2['foto'],136,50+$margen_vertical_sumatorio6,18);
 $pdf->SetY($margen_vertical_inicial6+$margen_vertical_sumatorio6);
 $pdf->SetX(155);
-$pdf->MultiCell(102,5,$cedula_completa.utf8_decode('          VOTÓ'),0,'L',false);
+$pdf->MultiCell(102,5,$cedula_completa.'      PP'.$query_carnet2['id'],0,'L',false);
 $pdf->SetX(155);
 $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['nombres'])),0,'L',false);
 $pdf->SetX(155);
@@ -253,9 +253,9 @@ $pdf->MultiCell(102,5,utf8_decode(strtoupper($query_carnet2['apellidos'])),0,'L'
 $pdf->SetX(136);
 $pdf->MultiCell(102,5,'PROVINCIA: '.utf8_decode(strtoupper($query_provincia['provincia'])),0,'L',false);
 $pdf->SetX(136);
-$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])),0,'L',false);
+$pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2['circunscripcion'])).utf8_decode('                            VOTÓ'),0,'L',false);
 $pdf->SetX(136);
-$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                              FIRMA',0,'L',false);
+$pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio6 = $margen_vertical_sumatorio6 + 30;
 }
 //Fin de Segunda Página
