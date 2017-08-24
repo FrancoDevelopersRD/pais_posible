@@ -63,13 +63,14 @@ $pdf->AliasNbPages();
 $pdf->AddPage();
 $pdf->SetFont('Arial','',8);
 
+$margen_check = 73;
+
 $margen_vertical_inicial = 50;
 $margen_vertical_sumatorio = 0;
 $margen_vertical_inicial2 = 50;
 $margen_vertical_sumatorio2 = 0;
 $margen_vertical_inicial3 = 50;
 $margen_vertical_sumatorio3 = 0;
-$margen_check = 73;
 
 $margen_vertical_inicial4 = 50;
 $margen_vertical_sumatorio4 = 0;
@@ -77,6 +78,19 @@ $margen_vertical_inicial5 = 50;
 $margen_vertical_sumatorio5 = 0;
 $margen_vertical_inicial6 = 50;
 $margen_vertical_sumatorio6 = 0;
+
+//$contador_if = 7;
+$salto_pagina_inicial = 21;
+
+$contador_if = 0;
+$salto_pagina_incremental = 0;
+
+$columna_izquierda_inicial = 20;
+$columna_izquierda_final = 28;
+$columna_central_inicial = 27;
+$columna_central_final = 35;
+$columna_derecha_inicial = 34;
+$columna_derecha_final = 42;
 
 $contador = 0;
 
@@ -170,9 +184,9 @@ $margen_vertical_sumatorio3 = $margen_vertical_sumatorio3 + 30;
 //Fin de Primera Página
 
 //Inicio de Segunda Pagina
-if($contador>20 AND $contador<28){
+if($contador>$columna_izquierda_inicial AND $contador<$columna_izquierda_final){
 
-    if($contador==21){
+    if($contador==$salto_pagina_inicial){
         $pdf->AddPage();
     }
 
@@ -202,7 +216,8 @@ $pdf->SetX(10);
 $pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio4 = $margen_vertical_sumatorio4 + 30;
 }
-if($contador>27 AND $contador<35){
+
+if($contador>$columna_central_inicial AND $contador<$columna_central_final){
 
     $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
     $result_provincia = mysqli_query($link_datos_externos, "SELECT descripcion AS provincia FROM provincia WHERE id = '".$query_carnet2['provincia']."'");
@@ -230,7 +245,8 @@ $pdf->SetX(73);
 $pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio5 = $margen_vertical_sumatorio5 + 30;
 }
-if($contador>34 AND $contador<42){
+
+if($contador>$columna_derecha_inicial AND $contador<$columna_derecha_final){
 
     $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
     $result_provincia = mysqli_query($link_datos_externos, "SELECT descripcion AS provincia FROM provincia WHERE id = '".$query_carnet2['provincia']."'");
@@ -257,8 +273,29 @@ $pdf->MultiCell(102,5,'CIRCUNSCRIPCION: '.utf8_decode(strtoupper($query_carnet2[
 $pdf->SetX(136);
 $pdf->MultiCell(102,5,'COLEGIO: '.utf8_decode(strtoupper($query_carnet2['colegio_electoral'])).'                  FIRMA',0,'L',false);
 $margen_vertical_sumatorio6 = $margen_vertical_sumatorio6 + 30;
+
 }
 //Fin de Segunda Página
+
+if($contador==$columna_derecha_final-1){
+
+$salto_pagina_inicial = $columna_derecha_final;
+
+$columna_izquierda_inicial = $columna_derecha_final - 1;
+$columna_izquierda_final = $columna_izquierda_inicial + 8;
+$columna_central_inicial = $columna_izquierda_inicial + 7;
+$columna_central_final = $columna_izquierda_final + 7;
+$columna_derecha_inicial = $columna_central_inicial + 7;
+$columna_derecha_final = $columna_central_final + 7;
+
+$margen_vertical_inicial4 = 50;
+$margen_vertical_sumatorio4 = 0;
+$margen_vertical_inicial5 = 50;
+$margen_vertical_sumatorio5 = 0;
+$margen_vertical_inicial6 = 50;
+$margen_vertical_sumatorio6 = 0;
+}
+
 $contador++;
 $pdf->Line(10,50,10,80);
 $pdf->Line(73,50,73,80);
