@@ -23,21 +23,12 @@
     $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
     $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE provincia = '".$variable_provincia."'");
 
-    $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
-    $result_provincia_exclusiva = mysqli_query($link_datos_externos, "SELECT descripcion AS provincia FROM provincia WHERE id = '".$variable_provincia."'");
-    $provincia_exclusiva = mysqli_fetch_assoc($result_provincia_exclusiva);
-
     }
 
     if($_GET['tipo_reporte'] == 'municipio'){
 
     $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
     $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE municipio = '".$_GET['reportando_municipio']."'");
-
-    $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
-
-    $result_municipio_exclusiva = mysqli_query($link_datos_externos, "SELECT descripcion AS municipio FROM municipio WHERE id = '".$_GET['reportando_municipio']."'");
-    $municipio_exclusiva = mysqli_fetch_assoc($result_municipio_exclusiva);
 
     }
 
@@ -90,13 +81,25 @@ function Header()
     $this->SetX(36);
     $this->SetFont('Arial','B',14);
     if ($_GET['tipo_reporte'] == 'general') {
-    $this->MultiCell(135,5,'AL '.date("d/m/Y H:m:s"),0,'C',false);
+    $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+    $total_miembros = mysqli_query($link_pais_posible, "SELECT COUNT(*) AS total FROM carnet");
+    $total_miembros2 = mysqli_fetch_assoc($total_miembros);
+    $this->SetFont('Arial','',12);
+    $this->MultiCell(135,5,$total_miembros2['total'].' MIEMBROS',0,'C',false);
     }
     if ($_GET['tipo_reporte'] == 'provincia') {
-    $this->MultiCell(135,5,'PROVINCIA: '.utf8_decode(strtoupper($_GET['provincia_reportada'])),0,'C',false);
+        $variable_provincia = $_GET['provincia_reportada'];
+$link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+    $result_provincia_exclusiva = mysqli_query($link_datos_externos, "SELECT descripcion AS provincia FROM provincia WHERE id = '".$variable_provincia."'");
+    $provincia_exclusiva = mysqli_fetch_assoc($result_provincia_exclusiva);
+    $this->MultiCell(135,5,'PROVINCIA: '.utf8_decode(strtoupper($provincia_exclusiva['provincia'])),0,'C',false);
     }
     if ($_GET['tipo_reporte'] == 'municipio') {
-    $this->MultiCell(135,5,'MUNICIPIO: '.utf8_decode(strtoupper($_GET['reportando_municipio'])),0,'C',false);
+        $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+
+    $result_municipio_exclusiva = mysqli_query($link_datos_externos, "SELECT descripcion AS municipio FROM municipio WHERE id = '".$_GET['reportando_municipio']."'");
+    $municipio_exclusiva = mysqli_fetch_assoc($result_municipio_exclusiva);
+    $this->MultiCell(135,5,'MUNICIPIO: '.utf8_decode(strtoupper($municipio_exclusiva['municipio'])),0,'C',false);
     }
     if ($_GET['tipo_reporte'] == 'mesa') {
     $this->MultiCell(135,5,'MESA: '.utf8_decode(strtoupper($_GET['reportando_mesa'])),0,'C',false);
@@ -105,7 +108,10 @@ function Header()
     $this->MultiCell(135,5,'DEL '.$_GET['reportando_fecha_desde'].' AL '.$_GET['reportando_fecha_hasta'],0,'C',false);
     }
     if ($_GET['tipo_reporte'] == 'nivel') {
-    $this->MultiCell(135,5,'NIVEL: '.utf8_decode(strtoupper($_GET['reportando_nivel'])),0,'C',false);
+        $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+        $result_nivel_acceso = mysqli_query($link_pais_posible, "SELECT nivel_acceso AS nivel FROM niveles_acceso WHERE id = '".$_GET['reportando_nivel']."'");
+    $nivel_exclusivo = mysqli_fetch_assoc($result_nivel_acceso);
+    $this->MultiCell(135,5,'NIVEL: '.utf8_decode(strtoupper($nivel_exclusivo['nivel'])),0,'C',false);
     }
     $this->Image('pais_posible.jpg',8,8,30);
     $this->Image('milton_morrison.jpg',168,8,30);
