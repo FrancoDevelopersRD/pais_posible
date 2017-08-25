@@ -10,13 +10,19 @@
     ?>
     <?php
 
+    if($_GET['tipo_reporte'] == 'general'){
+
     $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
     $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet");
-    //$query_carnet = mysqli_fetch_assoc($result_carnet);
 
-    $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
-    $result_provincia = mysqli_query($link_datos_externos, "SELECT descripcion AS provincia FROM provincia WHERE id = '".$query_carnet['provincia']."'");
-    $query_provincia = mysqli_fetch_assoc($result_provincia);
+    }
+
+    if($_GET['tipo_reporte'] == 'provincia'){
+
+    $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE provincia = '".$_GET['provincia_reportada']."'");
+
+    }
 
     $inicio_cedula = substr($query_carnet['cedula'], 0, 3);
     $medio_cedula = substr($query_carnet['cedula'], 3, 7);

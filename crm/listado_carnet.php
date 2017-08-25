@@ -19,7 +19,36 @@ $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posi
 $result_agente = mysqli_query($link_pais_posible, "SELECT id FROM usuarios WHERE  cedula = '".$_SESSION['cedula']."'");
 
 
-$result = mysqli_query($link_pais_posible, "SELECT carnet.*, carnet.id AS val, CONCAT(carnet.nombres,' ',carnet.apellidos) AS nombre_completo, niveles_acceso.nivel_acceso AS nivel_acceso, ciudades.ciudad AS ciudad FROM carnet INNER JOIN ciudades ON carnet.provincia = ciudades.id INNER JOIN niveles_acceso ON carnet.nivel_acceso = niveles_acceso.id");
+$result = mysqli_query($link_pais_posible, "SELECT carnet.*, carnet.id AS val, carnet.fecha_creacion AS fecha_creacion2, CONCAT(carnet.nombres,' ',carnet.apellidos) AS nombre_completo, niveles_acceso.nivel_acceso AS nivel_acceso, ciudades.ciudad AS ciudad FROM carnet INNER JOIN ciudades ON carnet.provincia = ciudades.id INNER JOIN niveles_acceso ON carnet.nivel_acceso = niveles_acceso.id");
+
+$link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+$result_provincia = mysqli_query($link_datos_externos, "SELECT id AS val, descripcion AS provincia FROM provincia WHERE id <= 32");
+
+$opt_provincia = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_provincia)) {
+    $opt_provincia .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['provincia'])))."</option>";
+}
+
+$result_municipio = mysqli_query($link_datos_externos, "SELECT id AS val, descripcion AS municipio FROM municipio");
+
+$opt_municipio = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_municipio)) {
+    $opt_municipio .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['municipio'])))."</option>";
+}
+
+$result_colegio_mesa = mysqli_query($link_datos_externos, "SELECT codigocolegio AS codigocolegio FROM colegio2016");
+
+$opt_colegio_mesa = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_colegio_mesa)) {
+    $opt_colegio_mesa .= "<option value=\"".$row['codigocolegio']."\">".utf8_decode(ucwords(strtolower($row['codigocolegio'])))."</option>";
+}
+
+$result_nivel = mysqli_query($link_pais_posible, "SELECT id AS val, nivel_acceso AS nivel_acceso FROM niveles_acceso");
+
+$opt_nivel = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_nivel)) {
+    $opt_nivel .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['nivel_acceso'])))."</option>";
+}
 
 
 
@@ -45,7 +74,7 @@ if(!empty($_GET['pruebaSweet'])){
   <link rel="stylesheet" href="../css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="../css/dataTables.bootstrap.min.css">
   <link rel="stylesheet" href="../css/dataTables.responsive.css">
-  <link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" type="text/css">
+  
   <link rel="stylesheet" href="../css/font-awesome.min.css" type="text/css">
   <link rel="stylesheet" href="../css/animate.min.css">
   <link rel="stylesheet" href="../css/jquery-ui.min.css">
@@ -58,6 +87,9 @@ if(!empty($_GET['pruebaSweet'])){
   <link rel="stylesheet" href="../css/tether.min.css">
   <link rel="stylesheet" href="../css/timeline.css">
   <link rel="stylesheet" href="../css/toastr.min.css" type="text/css">-->
+
+  <link rel="stylesheet" type="text/css" href="../select2/dist/css/select2.css">
+  <link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" type="text/css">
 
   <!-- Bootstrap Core CSS -->
   <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -404,46 +436,50 @@ if(!empty($_GET['pruebaSweet'])){
                                 <div class="panel-heading" style="font-size: 23px;">Listado de Carnets</div>
                                 <div class="panel-body">
                                     <div class="row" style="margin-bottom: 20px;">
-                                        <div class="col-md-3">
-                                            <a href="generar_reporte.php" class="btn btn-success" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Generar Reporte</a>  
-                                        </div>
-                                        <div class="col-md-3 col-md-offset-6">
-                                            <a href="generar_carnet.php" class="btn btn-primary" style="margin-left: 20px; color: #fff;"><i class="fa fa-gears" style="color: #fff;"> </i> Nuevo Carnet</a>  
-                                        </div>
-                                    </div>                            
-                                    <div class="row">
                                         <div class="col-md-12">
-                                            <table  width="100%" class="table table-striped table-bordered table-hover" id="resultados">
+                                            <a href="generar_reporte.php?tipo_reporte=general" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte General</a>  
+                                            <button type="button" id="reporte_provincia" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Provincia</button> 
+                                            <button type="button" id="reporte_municipio" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Municipio</button> 
+                                            <button type="button" id="reporte_mesa" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Mesa</button> 
+                                            <button type="button" id="reporte_fecha" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Fecha</button> 
+                                            <hr />
+                                            <button type="button" id="reporte_nivel" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Nivel</button> 
+                                            <button type="button" id="reporte_combinado" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Combinado</button> 
+                                            <a href="generar_carnet.php" class="btn btn-primary" style="margin-left: 20px; color: #fff;"><i class="fa fa-gears" style="color: #fff;"> </i> Nuevo Carnet</a> 
+                                        </div>
+                                    </div> 
+                                </div>                            
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <table  width="100%" class="table table-striped table-bordered table-hover" id="resultados">
 
-                                                <thead><tr>
-                                                    <th style="text-align:center">Cedula</th>
-                                                    <th style="text-align:center">Nombre Completo</th>
-                                                    <th style="text-align:center">Provincia</th>
-                                                    <th style="text-align:center">Municipio</th>
-                                                    <th style="text-align:center">Circ.</th>
-                                                    <th style="text-align:center">Sector</th>
-                                                    <th style="text-align:center">Colegio (Mesa)</th>
-                                                    <th style="text-align:center">Nombre Recinto</th>
-                                                    <th style="text-align:center">Nivel</th>
-                                                    <th style="text-align:center">Ver Carnet</th>
+                                            <thead><tr>
+                                                <th style="text-align:center">Cedula</th>
+                                                <th style="text-align:center">Nombre Completo</th>
+                                                <th style="text-align:center">Provincia</th>
+                                                <th style="text-align:center">Municipio</th>
+                                                <th style="text-align:center">Circ.</th>
+                                                <th style="text-align:center">Colegio (Mesa)</th>
+                                                <th style="text-align:center">Fecha</th>
+                                                <th style="text-align:center">Nivel</th>
+                                                <th style="text-align:center">Ver Carnet</th>
 
-                                                </thead><tbody>
+                                            </thead><tbody>
 
-                                                <?php
-                                                while ($row = mysqli_fetch_assoc($result)) { 
-                                                    $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
- $result_cedula = mysqli_query($link_datos_externos, "SELECT padron.cedula AS cedula, padron.nombresplastico AS nombresplastico, padron.fechanacimiento AS nacimiento, padron.codigorecinto AS codigorecinto, colegio2016.codigocolegio AS colegio, padron.apellidosplastico AS apellidosplastico, padron.codigocircunscripcion AS codigocircunscripcion, provincia.descripcion AS provincia, municipio.descripcion AS municipio, recinto.descripcion AS recinto, recinto.direccion AS direccion, sectorparaje.descripcion AS sector, padron.idsexo AS sexo, padron.idestadocivil AS estado_civil FROM padron INNER JOIN recinto ON padron.codigorecinto = recinto.codigorecinto INNER JOIN sectorparaje ON sectorparaje.id = recinto.idsectorparaje INNER JOIN colegio2016 ON padron.colegio = colegio2016.codigocolegio INNER JOIN sexo ON padron.idsexo = sexo.id INNER JOIN provincia ON provincia.id = padron.idprovincia INNER JOIN municipio ON municipio.id = padron.idmunicipio INNER JOIN estado_civil ON padron.idestadocivil = estado_civil.id WHERE cedula = '".$row['cedula']."'");
-    $query_cedula = mysqli_fetch_assoc($result_cedula);
-                                                    ?>
-                                                  <tr >
+                                            <?php
+                                            while ($row = mysqli_fetch_assoc($result)) { 
+                                                $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+                                                $result_cedula = mysqli_query($link_datos_externos, "SELECT padron.cedula AS cedula, padron.nombresplastico AS nombresplastico, padron.fechanacimiento AS nacimiento, padron.codigorecinto AS codigorecinto, colegio2016.codigocolegio AS colegio, padron.apellidosplastico AS apellidosplastico, padron.codigocircunscripcion AS codigocircunscripcion, provincia.descripcion AS provincia, municipio.descripcion AS municipio, recinto.descripcion AS recinto, recinto.direccion AS direccion, sectorparaje.descripcion AS sector, padron.idsexo AS sexo, padron.idestadocivil AS estado_civil FROM padron INNER JOIN recinto ON padron.codigorecinto = recinto.codigorecinto INNER JOIN sectorparaje ON sectorparaje.id = recinto.idsectorparaje INNER JOIN colegio2016 ON padron.colegio = colegio2016.codigocolegio INNER JOIN sexo ON padron.idsexo = sexo.id INNER JOIN provincia ON provincia.id = padron.idprovincia INNER JOIN municipio ON municipio.id = padron.idmunicipio INNER JOIN estado_civil ON padron.idestadocivil = estado_civil.id WHERE cedula = '".$row['cedula']."'");
+                                                $query_cedula = mysqli_fetch_assoc($result_cedula);
+                                                ?>
+                                                <tr >
                                                     <td style="text-align:center"><a href="regenerar_carnet.php?id_carnet=<?php echo $row['val']; ?>"><img src="<?php echo $row['foto'] ?>" style="height:40px; margin-bottom:-4px; margin-left:20px;" class="img img-responsive img-circle" /><?php echo $row['cedula']; ?></a></td>
                                                     <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($row['nombre_completo']))); ?></td>
                                                     <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($query_cedula['provincia']))); ?></td>
                                                     <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($query_cedula['municipio']))); ?></td>
                                                     <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($row['circunscripcion']))); ?></td>
-                                                    <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($query_cedula['sector']))); ?></td>
                                                     <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($query_cedula['colegio']))); ?></td>
-                                                    <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($row['nombre_recinto']))); ?></td>
+                                                    <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($row['fecha_creacion2']))); ?></td>
                                                     <td style="text-align:center"><?php echo ucwords(strtolower(utf8_decode($row['nivel_acceso']))); ?></td>
                                                     <td style="text-align:center"><a href="carnets/<?php echo $row['cedula'];?>.pdf" class="btn btn-success" id="ver_carnet" style="color: #fff;" target="_blank"><i class="fa fa-eye " style="color: #fff;"></a></i></button>  </td>
                                                     <?php }  ?>
@@ -492,6 +528,9 @@ if(!empty($_GET['pruebaSweet'])){
             <script src="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>
             <script src="../bower_components/datatables-responsive/js/dataTables.responsive.js"></script>
 
+
+            <script type="text/javascript" src="../select2/dist/js/select2.js"></script>
+
             <!-- Sweet Alert-->
 
             <!-- for IE support -->
@@ -527,8 +566,105 @@ if(!empty($_GET['pruebaSweet'])){
                 });
               }
 
-          </script>
+              $("#reporte_provincia").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Provincia',
+                    customClass: 'swal-wide-1',
+                    html: '<select id="reportando_provincia" name="reportando_provincia" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_provincia; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                });
 
-      </body>
+                $("#reportando_provincia").select2({
+                    placeholder:"Seleccione la provincia",
+                    dropdownParent: jQuery('.swal-wide-1')
+                });
+                
+            });
 
-      </html>
+              $("#reporte_municipio").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Municipio',
+                    customClass: 'swal-wide-2',
+                    html: '<select id="reportando_municipio" name="reportando_municipio" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_municipio; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                });
+
+                $("#reportando_municipio").select2({
+                    placeholder:"Seleccione la municipio",
+                    dropdownParent: jQuery('.swal-wide-2')
+                });
+            });
+              $("#reporte_mesa").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Colegio Electoral o Mesa',
+                    customClass: 'swal-wide-3',
+                    html: '<select id="reportando_mesa" name="reportando_mesa" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_colegio_mesa; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                });
+
+                $("#reportando_mesa").select2({
+                    placeholder:"Seleccione la mesa",
+                    dropdownParent: jQuery('.swal-wide-3')
+                });
+            });
+              $("#reporte_fecha").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Rango de Fecha',
+                    customClass: 'swal-wide-5',
+                    html: '<label id="lab_fecha_desde">Desde</label><div class="input-group date" id="datetimepicker_fecha_desde"/><span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span><input type="text" name="fecha_desde" id="fecha_desde" class="form-control"/></div>'+'<label id="lab_fecha_hasta">Hasta</label><div class="input-group date" id="datetimepicker_fecha_hasta"/><span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span><input type="text" name="fecha_hasta" id="fecha_hasta" class="form-control"/></div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                });
+
+                $(function () {
+                        $('#datetimepicker_fecha_desde').datetimepicker({
+                        format: 'DD/MM/YYYY HH:mm'
+                    });
+                });
+                $(function () {
+                        $('#datetimepicker_fecha_hasta').datetimepicker({
+                        format: 'DD/MM/YYYY HH:mm'
+                    });
+                });
+               });
+              $("#reporte_nivel").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Nivel de Acceso',
+                    customClass: 'swal-wide-5',
+                    html: '<select id="reportando_nivel" name="reportando_nivel" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_nivel; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                });
+
+                $("#reportando_nivel").select2({
+                    placeholder:"Seleccione el nivel",
+                    dropdownParent: jQuery('.swal-wide-5')
+                });
+            });
+              $("#reporte_combinado").click(function () {
+                swal({
+                    title: 'Apuntes Recordatorios',
+                    input: 'text'
+                });
+            });
+
+        </script>
+
+    </body>
+
+    </html>
+
+                            
