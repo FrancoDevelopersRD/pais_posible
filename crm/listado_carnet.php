@@ -50,6 +50,12 @@ while ($row = mysqli_fetch_assoc($result_nivel)) {
     $opt_nivel .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['nivel_acceso'])))."</option>";
 }
 
+$result_circunscripcion = mysqli_query($link_pais_posible, "SELECT circunscripcion AS circunscripcion FROM circ_alternativa");
+$opt_circunscripcion = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_circunscripcion)) {
+    $opt_circunscripcion .= "<option value=\"".$row['circunscripcion']."\">".utf8_decode(ucwords(strtolower($row['circunscripcion'])))."</option>";
+}
+
 
 
 if(!empty($_GET['pruebaSweet'])){
@@ -444,6 +450,7 @@ if(!empty($_GET['pruebaSweet'])){
                                             <button type="button" id="reporte_fecha" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Fecha</button> 
                                             <hr />
                                             <button type="button" id="reporte_nivel" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Nivel</button> 
+                                            <button type="button" id="reporte_circunscripcion" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Provincia Y Circunscripcion</button> 
                                             <button type="button" id="reporte_combinado" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Combinado</button> 
                                             <a href="generar_carnet.php" class="btn btn-primary" style="margin-left: 20px; color: #fff;"><i class="fa fa-gears" style="color: #fff;"> </i> Nuevo Carnet</a> 
                                         </div>
@@ -675,6 +682,32 @@ if(!empty($_GET['pruebaSweet'])){
                     placeholder:"Seleccione el nivel",
                     dropdownParent: jQuery('.swal-wide-5')
                 });
+            });
+              $("#reporte_circunscripcion").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Provincia y Circunscripcion',
+                    customClass: 'swal-wide-1',
+                    html: '<select id="reportando_provincia" name="reportando_provincia" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_provincia; ?></select>'+'<br /><br /><select id="reportando_circunscripcion" name="reportando_circunscripcion" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_circunscripcion; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                }).then(function(){
+                    var reportando_provincia = document.getElementById('reportando_provincia').value;
+                    var reportando_circunscripcion = document.getElementById('reportando_circunscripcion').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=provincia_circunscripcion&provincia_reportada='+reportando_provincia+'&circunscripcion_reportada='+reportando_circunscripcion;
+  
+                });
+
+                $("#reportando_provincia").select2({
+                    placeholder:"Seleccione la provincia",
+                    dropdownParent: jQuery('.swal-wide-1')
+                });
+                $("#reportando_circunscripcion").select2({
+                    placeholder:"Seleccione la circunscripcion",
+                    dropdownParent: jQuery('.swal-wide-1')
+                });
+                
             });
               $("#reporte_combinado").click(function () {
                 swal({

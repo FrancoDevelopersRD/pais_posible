@@ -52,6 +52,13 @@
 
     }
 
+    if($_GET['tipo_reporte'] == 'provincia_circunscripcion'){
+
+    $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE provincia = '".$_GET['provincia_reportada']."' AND circunscripcion = '".$_GET['circunscripcion_reportada']."'");
+
+    }
+
     
 
 
@@ -112,6 +119,14 @@ $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_e
         $result_nivel_acceso = mysqli_query($link_pais_posible, "SELECT nivel_acceso AS nivel FROM niveles_acceso WHERE id = '".$_GET['reportando_nivel']."'");
     $nivel_exclusivo = mysqli_fetch_assoc($result_nivel_acceso);
     $this->MultiCell(135,5,'NIVEL: '.utf8_decode(strtoupper($nivel_exclusivo['nivel'])),0,'C',false);
+    }
+    if ($_GET['tipo_reporte'] == 'provincia_circunscripcion') {
+        $variable_provincia = $_GET['provincia_reportada'];
+$link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+    $result_provincia_exclusiva = mysqli_query($link_datos_externos, "SELECT descripcion AS provincia FROM provincia WHERE id = '".$variable_provincia."'");
+    $provincia_exclusiva = mysqli_fetch_assoc($result_provincia_exclusiva);
+    $this->SetFont('Arial','',11);
+    $this->MultiCell(135,5,'PROVINCIA: '.utf8_decode(strtoupper($provincia_exclusiva['provincia'])).', CIRC: '.utf8_decode(strtoupper($_GET['circunscripcion_reportada'])),0,'C',false);
     }
     $this->Image('pais_posible.jpg',8,8,30);
     $this->Image('milton_morrison.jpg',168,8,30);
