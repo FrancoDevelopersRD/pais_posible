@@ -554,6 +554,7 @@ if(!empty($_GET['pruebaSweet'])){
                 });
             });
 
+
                var pruebaSweet= <?php echo $pruebaSweet; ?>;
 
                if (pruebaSweet == 12){
@@ -575,6 +576,10 @@ if(!empty($_GET['pruebaSweet'])){
                     confirmButtonText: 'Generar Reporte',
                     confirmButtonText: 'Submit',
                     
+                }).then(function(){
+                    var reportando_provincia = document.getElementById('reportando_provincia').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=provincia&provincia_reportada='+reportando_provincia;
+  
                 });
 
                 $("#reportando_provincia").select2({
@@ -593,6 +598,10 @@ if(!empty($_GET['pruebaSweet'])){
                     confirmButtonText: 'Generar Reporte',
                     confirmButtonText: 'Submit',
                     
+                }).then(function(){
+                    var reportando_municipio = document.getElementById('reportando_municipio').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=municipio&reportando_municipio='+reportando_municipio;
+  
                 });
 
                 $("#reportando_municipio").select2({
@@ -609,6 +618,10 @@ if(!empty($_GET['pruebaSweet'])){
                     confirmButtonText: 'Generar Reporte',
                     confirmButtonText: 'Submit',
                     
+                }).then(function(){
+                    var reportando_mesa = document.getElementById('reportando_mesa').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=mesa&reportando_mesa='+reportando_mesa;
+  
                 });
 
                 $("#reportando_mesa").select2({
@@ -625,16 +638,21 @@ if(!empty($_GET['pruebaSweet'])){
                     confirmButtonText: 'Generar Reporte',
                     confirmButtonText: 'Submit',
                     
+                }).then(function(){
+                    var fecha_desde = document.getElementById('fecha_desde').value;
+                    var fecha_hasta = document.getElementById('fecha_hasta').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=fecha&reportando_fecha_desde='+fecha_desde+'&reportando_fecha_hasta='+fecha_hasta;
+  
                 });
 
                 $(function () {
                         $('#datetimepicker_fecha_desde').datetimepicker({
-                        format: 'DD/MM/YYYY HH:mm'
+                        format: 'YYYY-MM-DD 00:00:00'
                     });
                 });
                 $(function () {
                         $('#datetimepicker_fecha_hasta').datetimepicker({
-                        format: 'DD/MM/YYYY HH:mm'
+                        format: 'YYYY-MM-DD 23:59:59'
                     });
                 });
                });
@@ -647,6 +665,10 @@ if(!empty($_GET['pruebaSweet'])){
                     confirmButtonText: 'Generar Reporte',
                     confirmButtonText: 'Submit',
                     
+                }).then(function(){
+                    var reportando_nivel = document.getElementById('reportando_nivel').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=nivel&reportando_nivel='+reportando_nivel;
+  
                 });
 
                 $("#reportando_nivel").select2({
@@ -656,7 +678,7 @@ if(!empty($_GET['pruebaSweet'])){
             });
               $("#reporte_combinado").click(function () {
                 swal({
-                    title: 'Apuntes Recordatorios',
+                    title: 'Reporte de Filtros Combinados',
                     input: 'text'
                 });
             });

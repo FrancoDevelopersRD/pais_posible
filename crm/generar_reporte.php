@@ -18,11 +18,51 @@
     }
 
     if($_GET['tipo_reporte'] == 'provincia'){
+        $variable_provincia = $_GET['provincia_reportada'];
 
     $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
-    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE provincia = '".$_GET['provincia_reportada']."'");
+    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE provincia = '".$variable_provincia."'");
+
+    $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+    $result_provincia_exclusiva = mysqli_query($link_datos_externos, "SELECT descripcion AS provincia FROM provincia WHERE id = '".$variable_provincia."'");
+    $provincia_exclusiva = mysqli_fetch_assoc($result_provincia_exclusiva);
 
     }
+
+    if($_GET['tipo_reporte'] == 'municipio'){
+
+    $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE municipio = '".$_GET['reportando_municipio']."'");
+
+    $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+
+    $result_municipio_exclusiva = mysqli_query($link_datos_externos, "SELECT descripcion AS municipio FROM municipio WHERE id = '".$_GET['reportando_municipio']."'");
+    $municipio_exclusiva = mysqli_fetch_assoc($result_municipio_exclusiva);
+
+    }
+
+    if($_GET['tipo_reporte'] == 'mesa'){
+
+    $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE colegio_electoral = '".$_GET['reportando_mesa']."'");
+
+    }
+
+    if($_GET['tipo_reporte'] == 'fecha'){
+
+    $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE fecha_creacion BETWEEN '".$_GET['reportando_fecha_desde']."' AND '".$_GET['reportando_fecha_hasta']."'");
+    }
+
+    if($_GET['tipo_reporte'] == 'nivel'){
+
+    $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE nivel_acceso = '".$_GET['reportando_nivel']."'");
+
+    }
+
+    
+
 
     $inicio_cedula = substr($query_carnet['cedula'], 0, 3);
     $medio_cedula = substr($query_carnet['cedula'], 3, 7);
@@ -41,11 +81,32 @@ function Header()
     $this->SetFont('Arial','B',17);
     $this->SetY(10);
     $this->SetX(36);
+    if ($_GET['tipo_reporte'] == 'general') {
     $this->MultiCell(135,5,utf8_decode('REPORTE GENERAL DE CARNETS DE MEMBRESÍA'),0,'C',false);
+    } else{
+    $this->MultiCell(135,5,utf8_decode('REPORTE ESPECÍFICO DE CARNETS DE MEMBRESÍA'),0,'C',false); 
+    }
     $this->SetY(22);
     $this->SetX(36);
     $this->SetFont('Arial','B',14);
-    $this->MultiCell(135,5,utf8_decode('AL 19/08/2017'),0,'C',false);
+    if ($_GET['tipo_reporte'] == 'general') {
+    $this->MultiCell(135,5,'AL '.date("d/m/Y H:m:s"),0,'C',false);
+    }
+    if ($_GET['tipo_reporte'] == 'provincia') {
+    $this->MultiCell(135,5,'PROVINCIA: '.utf8_decode(strtoupper($_GET['provincia_reportada'])),0,'C',false);
+    }
+    if ($_GET['tipo_reporte'] == 'municipio') {
+    $this->MultiCell(135,5,'MUNICIPIO: '.utf8_decode(strtoupper($_GET['reportando_municipio'])),0,'C',false);
+    }
+    if ($_GET['tipo_reporte'] == 'mesa') {
+    $this->MultiCell(135,5,'MESA: '.utf8_decode(strtoupper($_GET['reportando_mesa'])),0,'C',false);
+    }
+    if ($_GET['tipo_reporte'] == 'fecha') {
+    $this->MultiCell(135,5,'DEL '.$_GET['reportando_fecha_desde'].' AL '.$_GET['reportando_fecha_hasta'],0,'C',false);
+    }
+    if ($_GET['tipo_reporte'] == 'nivel') {
+    $this->MultiCell(135,5,'NIVEL: '.utf8_decode(strtoupper($_GET['reportando_nivel'])),0,'C',false);
+    }
     $this->Image('pais_posible.jpg',8,8,30);
     $this->Image('milton_morrison.jpg',168,8,30);
     $this->SetFont('Arial','',10);
