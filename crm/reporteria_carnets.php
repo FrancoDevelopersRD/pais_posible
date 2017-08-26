@@ -9,7 +9,6 @@ $pais_posible = mysql_pconnect($hostname, $username, $password) or trigger_error
 if (!isset($_SESSION)) {
   session_start();
 }
-
 if (!isset($_SESSION['cedula'])) {
   header('Location: ../index.php');
  } 
@@ -17,10 +16,68 @@ if (!isset($_SESSION['cedula'])) {
 $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
 
     $result_agente = mysqli_query($link_pais_posible, "SELECT id FROM usuarios WHERE  cedula = '".$_SESSION['cedula']."'");
+    $agente = mysqli_fetch_assoc($result_agente);
 
 
-$result = mysqli_query($link_pais_posible, "SELECT usuarios.*, CONCAT(usuarios.nombres,' ',usuarios.apellidos) AS nombre_completo, niveles_acceso.nivel_acceso AS nivel_acceso, ciudades.ciudad AS ciudad FROM usuarios INNER JOIN niveles_acceso ON usuarios.nivel_acceso = niveles_acceso.id INNER JOIN ciudades ON usuarios.provincia = ciudades.id");
+$result = mysqli_query($link_pais_posible, "SELECT id, nivel_acceso FROM niveles_acceso ORDER BY id ASC");
 
+if(!empty($_GET['nivel_agregado'])){
+      $nivel_agregado = $_GET['nivel_agregado'];
+      $nuevo_nivel = $_GET['nuevo_nivel'];
+    } else {
+      $nivel_agregado = 2;
+      $nuevo_nivel = 2;
+    }
+
+    $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+
+$result_agente = mysqli_query($link_pais_posible, "SELECT id FROM usuarios WHERE  cedula = '".$_SESSION['cedula']."'");
+
+
+$result = mysqli_query($link_pais_posible, "SELECT * FROM reportes");
+
+$link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+$result_provincia = mysqli_query($link_datos_externos, "SELECT id AS val, descripcion AS provincia FROM provincia WHERE id <= 32");
+
+$opt_provincia = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_provincia)) {
+    $opt_provincia .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['provincia'])))."</option>";
+}
+
+$result_municipio = mysqli_query($link_datos_externos, "SELECT id AS val, descripcion AS municipio FROM municipio");
+
+$opt_municipio = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_municipio)) {
+    $opt_municipio .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['municipio'])))."</option>";
+}
+
+$result_colegio_mesa = mysqli_query($link_datos_externos, "SELECT codigocolegio AS codigocolegio FROM colegio2016");
+
+$opt_colegio_mesa = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_colegio_mesa)) {
+    $opt_colegio_mesa .= "<option value=\"".$row['codigocolegio']."\">".utf8_decode(ucwords(strtolower($row['codigocolegio'])))."</option>";
+}
+
+$result_nivel = mysqli_query($link_pais_posible, "SELECT id AS val, nivel_acceso AS nivel_acceso FROM niveles_acceso");
+
+$opt_nivel = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_nivel)) {
+    $opt_nivel .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['nivel_acceso'])))."</option>";
+}
+
+$result_circunscripcion = mysqli_query($link_pais_posible, "SELECT circunscripcion AS circunscripcion FROM circ_alternativa");
+$opt_circunscripcion = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_circunscripcion)) {
+    $opt_circunscripcion .= "<option value=\"".$row['circunscripcion']."\">".utf8_decode(ucwords(strtolower($row['circunscripcion'])))."</option>";
+}
+
+
+
+if(!empty($_GET['pruebaSweet'])){
+  $pruebaSweet = $_GET['pruebaSweet'];
+} else {
+  $pruebaSweet = 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -76,6 +133,9 @@ $result = mysqli_query($link_pais_posible, "SELECT usuarios.*, CONCAT(usuarios.n
   <!--Estilos de DatePicker-->
   <link href="../css/bootstrap-datetimepicker.css" rel="stylesheet" type="text/css">
 
+
+  <link rel="stylesheet" href="../css/select2.min.css" type="text/css">
+
   <!-- DataTables CSS -->
   <link href="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css" rel="stylesheet">
 
@@ -83,6 +143,9 @@ $result = mysqli_query($link_pais_posible, "SELECT usuarios.*, CONCAT(usuarios.n
   <link href="../bower_components/datatables-responsive/css/dataTables.responsive.css" rel="stylesheet">
 
   <!-- Sweet Alert -->
+
+
+  <link rel="stylesheet" href="../css/select2.min.css" type="text/css">
 
   <link rel="stylesheet" href="../bower_components/sweetalert2/dist/sweetalert2.min.css">
 
@@ -395,7 +458,7 @@ $result = mysqli_query($link_pais_posible, "SELECT usuarios.*, CONCAT(usuarios.n
                 <div id="page-wrapper" style="background-color: #4267b2;">
                     <div class="row">
                         <div class="col-lg-12">
-                            <h1 class="page-header" style="color: #fff;"><i class=" fa fa-users fa fa-users"></i> Listado de Usuarios</h1>
+                            <h1 class="page-header" style="color: #fff;"><i class=" fa fa-file-pdf-o fa fa-file-pdf-o"></i> Reportes de Carnets</h1>
                         </div>
                         <!-- /.col-lg-12 -->
                     </div>
@@ -404,40 +467,39 @@ $result = mysqli_query($link_pais_posible, "SELECT usuarios.*, CONCAT(usuarios.n
                     <div class="row">
                         <div class="col-md-12">
                             <div class="panel panel-green">
-                                <div class="panel-heading" style="font-size: 23px;">Lista de Usuarios</div>
+                                <div class="panel-heading" style="font-size: 23px;">Lista de Reportes de Carnets</div>
                                 <div class="panel-body">
                                     <div class="row" style="margin-bottom: 20px;">
-                                        <div class="col-md-3 col-md-offset-10">
-                                            <a href="registrar_usuario.php" class="btn btn-primary" id="nuevo_nivel" style="margin-left: 20px; color: #fff;"><i class="fa fa-user-plus" style="color: #fff;"> </i> Agregar Usuario</a>  
+                                        <div class="col-md-12">
+                                            <a href="generar_reporte.php?tipo_reporte=general" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte General</a>  
+                                            <button type="button" id="reporte_provincia" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Provincia</button> 
+                                            <button type="button" id="reporte_municipio" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Municipio</button> 
+                                            <button type="button" id="reporte_mesa" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Mesa</button> 
+                                            <button type="button" id="reporte_fecha" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Fecha</button> 
+                                            <hr />
+                                            <button type="button" id="reporte_nivel" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Nivel</button> 
+                                            <button type="button" id="reporte_circunscripcion" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Por Provincia Y Circunscripcion</button> 
+                                            <button type="button" id="reporte_combinado" class="btn btn-danger" style="margin-left: 20px; color: #fff;"><i class="fa fa-file-pdf-o" style="color: #fff;"> </i> Reporte Combinado</button> 
                                         </div>
-                                    </div>                            
+                                    </div> 
+                                </div>                           
                                     <div class="row">
                                         <div class="col-md-12">
                                         <table  width="100%" class="table table-striped table-bordered table-hover" id="resultados">
 
-                                                <thead><tr>
-                                                <th style="text-align:center">Cedula</th>
-                                                <th style="text-align:center">Nombre Completo</th>
-                                                <th style="text-align:center">Email</th>
-                                                <th style="text-align:center">Telefono</th>
-                                                <th style="text-align:center">Celular</th>
-                                                <th style="text-align:center">Ciudad</th>
-                                                <th style="text-align:center">Nivel</th>
-                                                <th style="text-align:center">Editar</th>
-
-                                                </thead><tbody>
+                                                <thead><tr><th style="text-align:center">Código</th><th style="text-align:center">Tipo de Reporte</th><th style="text-align:center">Fecha</th><th style="text-align:center">Creador</th><th style="text-align:center">Ver</th></thead><tbody>
 
                                                 <?php
-                                                while ($row = mysqli_fetch_assoc($result)) { ?>
-                                                  <tr >
-                                                        <td style="text-align:center"><?php echo $row['cedula']; ?></td>
-                                                        <td style="text-align:center"><?php echo ucwords($row['nombre_completo']); ?></td>
-                                                        <td style="text-align:center"><?php echo $row['correo']; ?></td>
-                                                        <td style="text-align:center"><?php echo ucwords($row['telefono']); ?></td>
-                                                        <td style="text-align:center"><?php echo ucwords($row['celular']); ?></td>
-                                                        <td style="text-align:center"><?php echo ucwords($row['ciudad']); ?></td>
-                                                        <td style="text-align:center"><?php echo ucwords($row['nivel_acceso']); ?></td>
-                                                        <td style="text-align:center"><a href="edit_nivel.php?empleado=<?php echo $row['id'];?>" class="btn btn-success" id="editar_nivel" style="margin-left: 34px; color: #fff;">Editar <i class="fa fa-eraser " style="color: #fff;"> </i></button>  </td>
+                                                while ($row = mysqli_fetch_assoc($result)) { 
+                                                    $link_pais_posible2 = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+                                                $result_reporte_carnet_lista = mysqli_query($link_pais_posible2, "SELECT CONCAT(nombres,' ',apellidos) AS nombre_creador FROM usuarios WHERE id = '".$row['agente_creador']."'");
+                                                $query_creador = mysqli_fetch_assoc($result_reporte_carnet_lista);
+                                                    ?>
+                                                  <tr ><td style="text-align:center"><?php echo $row['codigo']; ?></td>
+                                                        <td style="text-align:center"><?php echo ucwords($row['tipo_reporte']); ?></td>
+                                                        <td style="text-align:center"><?php echo ucwords($row['fecha_creacion']); ?></td>
+                                                        <td style="text-align:center"><?php echo ucwords($query_creador['nombre_creador']); ?></td>
+                                                        <td style="text-align:center"><a href="carnets/reportes_carnets/<?php echo $row['codigo']; ?>.pdf" class="btn btn-success" id="ver_reporte" style="color: #fff;" target="_blank"><i class="fa fa-eye " style="color: #fff;"></a></i></button>  </td>
                                                     <?php } ?>
                                                 </tbody>
 
@@ -479,12 +541,15 @@ $result = mysqli_query($link_pais_posible, "SELECT usuarios.*, CONCAT(usuarios.n
 
             <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 
+
             <!-- DataTables JavaScript -->
             <script src="../bower_components/datatables/media/js/jquery.dataTables.min.js"></script>
             <script src="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>
             <script src="../bower_components/datatables-responsive/js/dataTables.responsive.js"></script>
 
             <!-- Sweet Alert-->
+            
+            <script type="text/javascript" src="../select2/dist/js/select2.js"></script>
 
             <!-- for IE support -->
             <script src="../bower_components/sweetalert2/dist/sweetalert2.min.js"></script>
@@ -501,12 +566,166 @@ $result = mysqli_query($link_pais_posible, "SELECT usuarios.*, CONCAT(usuarios.n
 
              $(document).ready(function() {
                 $('#resultados').DataTable({
-                    responsive: true   
-
+                    responsive: true,   
+                    "order": [[ 2, "desc" ]],
+                    paging: true
 
                 });
             });
 
+  var pruebaSweet= <?php echo $pruebaSweet; ?>;
+
+               if (pruebaSweet == 13){
+                  swal({
+                    title: "Reporte Generado Correctamente!",
+                    text: "Esta ventana se cerrará en 3 segundos.",
+                    imageUrl: "https://cdn4.iconfinder.com/data/icons/customicondesignoffice2/128/success.png",
+                    timer : 3000,
+                    showConfirmButton: false
+                });
+              }
+
+              $("#reporte_provincia").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Provincia',
+                    customClass: 'swal-wide-1',
+                    html: '<select id="reportando_provincia" name="reportando_provincia" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_provincia; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                }).then(function(){
+                    var reportando_provincia = document.getElementById('reportando_provincia').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=provincia&provincia_reportada='+reportando_provincia;
+  
+                });
+
+                $("#reportando_provincia").select2({
+                    placeholder:"Seleccione la provincia",
+                    dropdownParent: jQuery('.swal-wide-1')
+                });
+                
+            });
+
+              $("#reporte_municipio").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Municipio',
+                    customClass: 'swal-wide-2',
+                    html: '<select id="reportando_municipio" name="reportando_municipio" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_municipio; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                }).then(function(){
+                    var reportando_municipio = document.getElementById('reportando_municipio').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=municipio&reportando_municipio='+reportando_municipio;
+  
+                });
+
+                $("#reportando_municipio").select2({
+                    placeholder:"Seleccione la municipio",
+                    dropdownParent: jQuery('.swal-wide-2')
+                });
+            });
+              $("#reporte_mesa").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Colegio Electoral o Mesa',
+                    customClass: 'swal-wide-3',
+                    html: '<select id="reportando_mesa" name="reportando_mesa" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_colegio_mesa; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                }).then(function(){
+                    var reportando_mesa = document.getElementById('reportando_mesa').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=mesa&reportando_mesa='+reportando_mesa;
+  
+                });
+
+                $("#reportando_mesa").select2({
+                    placeholder:"Seleccione la mesa",
+                    dropdownParent: jQuery('.swal-wide-3')
+                });
+            });
+              $("#reporte_fecha").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Rango de Fecha',
+                    customClass: 'swal-wide-5',
+                    html: '<label id="lab_fecha_desde">Desde</label><div class="input-group date" id="datetimepicker_fecha_desde"/><span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span><input type="text" name="fecha_desde" id="fecha_desde" class="form-control"/></div>'+'<label id="lab_fecha_hasta">Hasta</label><div class="input-group date" id="datetimepicker_fecha_hasta"/><span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span><input type="text" name="fecha_hasta" id="fecha_hasta" class="form-control"/></div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                }).then(function(){
+                    var fecha_desde = document.getElementById('fecha_desde').value;
+                    var fecha_hasta = document.getElementById('fecha_hasta').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=fecha&reportando_fecha_desde='+fecha_desde+'&reportando_fecha_hasta='+fecha_hasta;
+  
+                });
+
+                $(function () {
+                        $('#datetimepicker_fecha_desde').datetimepicker({
+                        format: 'YYYY-MM-DD 00:00:00'
+                    });
+                });
+                $(function () {
+                        $('#datetimepicker_fecha_hasta').datetimepicker({
+                        format: 'YYYY-MM-DD 23:59:59'
+                    });
+                });
+               });
+              $("#reporte_nivel").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Nivel de Acceso',
+                    customClass: 'swal-wide-5',
+                    html: '<select id="reportando_nivel" name="reportando_nivel" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_nivel; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                }).then(function(){
+                    var reportando_nivel = document.getElementById('reportando_nivel').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=nivel&reportando_nivel='+reportando_nivel;
+  
+                });
+
+                $("#reportando_nivel").select2({
+                    placeholder:"Seleccione el nivel",
+                    dropdownParent: jQuery('.swal-wide-5')
+                });
+            });
+              $("#reporte_circunscripcion").click(function () {
+                swal({
+                    title: 'Generar Reporte Por Provincia y Circunscripcion',
+                    customClass: 'swal-wide-1',
+                    html: '<select id="reportando_provincia" name="reportando_provincia" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_provincia; ?></select>'+'<br /><br /><select id="reportando_circunscripcion" name="reportando_circunscripcion" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_circunscripcion; ?></select>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    confirmButtonText: 'Submit',
+                    
+                }).then(function(){
+                    var reportando_provincia = document.getElementById('reportando_provincia').value;
+                    var reportando_circunscripcion = document.getElementById('reportando_circunscripcion').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=provincia_circunscripcion&provincia_reportada='+reportando_provincia+'&circunscripcion_reportada='+reportando_circunscripcion;
+  
+                });
+
+                $("#reportando_provincia").select2({
+                    placeholder:"Seleccione la provincia",
+                    dropdownParent: jQuery('.swal-wide-1')
+                });
+                $("#reportando_circunscripcion").select2({
+                    placeholder:"Seleccione la circunscripcion",
+                    dropdownParent: jQuery('.swal-wide-1')
+                });
+                
+            });
+              $("#reporte_combinado").click(function () {
+                swal({
+                    title: 'Reporte de Filtros Combinados',
+                    input: 'text'
+                });
+            });
         </script>
 
     </body>

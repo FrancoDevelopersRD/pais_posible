@@ -1,14 +1,27 @@
     <?php
     require_once('../Connections/pais_posible.php');
     require('../fpdf/fpdf.php');
-    //include('../fpdf/lib_funciones.php');
     ?>
+    <?php
+
+$host="localhost:3306";
+$user="root";
+$password="root";
+$dbname = "pais_posible";
+
+$conn = mysqli_connect($host, $user, $password, $dbname);
+$link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
+
+?>
     <?php
     if (!isset($_SESSION)) {
       session_start();
     }
     ?>
     <?php
+
+    $result_agente = mysqli_query($link_pais_posible, "SELECT id FROM usuarios WHERE  cedula = '".$_SESSION['cedula']."'");
+    $agente = mysqli_fetch_assoc($result_agente);
 
     if($_GET['tipo_reporte'] == 'general'){
 
@@ -66,6 +79,20 @@
     $medio_cedula = substr($query_carnet['cedula'], 3, 7);
     $final_cedula = substr($query_carnet['cedula'], -1);
     $cedula_completa = $inicio_cedula.'-'.$medio_cedula.'-'.$final_cedula;
+
+
+    $query_last_id = mysqli_query($link_pais_posible, "SELECT id+1 AS last_id FROM reportes ORDER BY id DESC LIMIT 1");
+    $last_id = mysqli_fetch_assoc($query_last_id);
+
+    if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+    $query_reporte = "INSERT INTO reportes (codigo, tipo_reporte, agente_creador) VALUES ('RC".$last_id['last_id']."','".$_GET['tipo_reporte']."','".$agente['id']."')";
+
+      
+
+  mysqli_query($conn, $query_reporte);
 
     
 
@@ -437,7 +464,7 @@ $pdf->SetAutoPageBreak(true,25);
 $pdf->Ln(-20);
 
 
-$pdf->Output('F','carnets/reportes_carnets/reporte_prueba.pdf');
-header("Location: listado_carnet.php?pruebaSweet=13");
+$pdf->Output('F','carnets/reportes_carnets/RC'.$last_id['last_id'].'.pdf');
+header("Location: reporteria_carnets.php?pruebaSweet=13");
 
     ?>

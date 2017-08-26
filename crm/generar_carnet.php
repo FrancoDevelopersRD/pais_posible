@@ -415,6 +415,17 @@ while ($row = mysqli_fetch_assoc($result_posicion)) {
                                         </li>
                                     </ul>
                                 </li>
+                                <li>
+                                <a href="#" style="color: #000;"><i class="fa fa-file-pdf-o fa-fw" ></i> Reportes<span class="fa arrow"></span></a>
+                                <ul class="nav nav-second-level">
+                                    <li>
+                                        <a href="reporteria_carnets.php" style="color: #000;"><i class="fa fa-file-pdf-o fa-gears"></i> Reportes de Carnet</a>
+                                    </li>
+                                    <li>
+                                        <a href="reporteria_posibilistas.php" style="color: #000;"><i class="fa fa-file-pdf-o fa-fw"></i> Reportes de Posibilistas</a>
+                                    </li>
+                                </ul>
+                            </li>
 
                             </ul>
                         </div>

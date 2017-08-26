@@ -8,9 +8,6 @@ $dbname = "pais_posible";
 $conn = mysqli_connect($host, $user, $password, $dbname);
 $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
 
-  /*$query_contactos2 = mysqli_query($link_quality, "SELECT (id+1) AS contacto FROM contacto_telefonico ORDER BY id DESC LIMIT 1");
-  $contacto2 = mysqli_fetch_assoc($query_contactos2);*/
-
 ?>
 
 <?php
