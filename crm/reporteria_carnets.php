@@ -109,6 +109,7 @@ if(!empty($_GET['pruebaSweet'])){
   <link rel="stylesheet" href="../css/toastr.min.css" type="text/css">-->
 
   <!-- Bootstrap Core CSS -->
+  <link rel="stylesheet" type="text/css" href="../select2/dist/css/select2.css">
   <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Roperto's CSS -->
@@ -143,9 +144,6 @@ if(!empty($_GET['pruebaSweet'])){
   <link href="../bower_components/datatables-responsive/css/dataTables.responsive.css" rel="stylesheet">
 
   <!-- Sweet Alert -->
-
-
-  <link rel="stylesheet" href="../css/select2.min.css" type="text/css">
 
   <link rel="stylesheet" href="../bower_components/sweetalert2/dist/sweetalert2.min.css">
 
