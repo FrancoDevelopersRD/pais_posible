@@ -51,11 +51,26 @@ while ($row = mysqli_fetch_assoc($result_municipio)) {
     $opt_municipio .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['municipio'])))."</option>";
 }
 
+$result_municipio2 = mysqli_query($link_datos_externos, "SELECT id AS val, descripcion AS municipio FROM municipio");
+
+$opt_municipio2 = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_municipio2)) {
+    $opt_municipio2 .= "<option value=\"".$row['val']."\">".utf8_decode(ucwords(strtolower($row['municipio'])))."</option>";
+}
+
+
 $result_colegio_mesa = mysqli_query($link_datos_externos, "SELECT codigocolegio AS codigocolegio FROM colegio2016");
 
 $opt_colegio_mesa = "<option></option>";
 while ($row = mysqli_fetch_assoc($result_colegio_mesa)) {
     $opt_colegio_mesa .= "<option value=\"".$row['codigocolegio']."\">".utf8_decode(ucwords(strtolower($row['codigocolegio'])))."</option>";
+}
+
+$result_colegio_mesa2 = mysqli_query($link_datos_externos, "SELECT codigocolegio AS codigocolegio FROM colegio2016");
+
+$opt_colegio_mesa2 = "<option></option>";
+while ($row = mysqli_fetch_assoc($result_colegio_mesa2)) {
+    $opt_colegio_mesa2 .= "<option value=\"".$row['codigocolegio']."\">".utf8_decode(ucwords(strtolower($row['codigocolegio'])))."</option>";
 }
 
 $result_nivel = mysqli_query($link_pais_posible, "SELECT id AS val, nivel_acceso AS nivel_acceso FROM niveles_acceso");
@@ -171,7 +186,8 @@ if(!empty($_GET['pruebaSweet'])){
 
                 <!-- Navigation -->
                 <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-                    <img src="pais_posible.jpg" alt="" style="margin-left: -60px; width :5%; height :5%;">
+                    <img src="logo.jpg" alt="" style="margin-left: -130px; width :4%; height :4%; margin-top: 5px; margin-bottom: 5px;">
+                    <img src="nombre_pais_posible.jpg" alt="" style="width :12%; height :12%;">
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                             <span class="sr-only">Toggle navigation</span>
@@ -630,19 +646,24 @@ if(!empty($_GET['pruebaSweet'])){
                 swal({
                     title: 'Generar Reporte Por Colegio Electoral o Mesa',
                     customClass: 'swal-wide-3',
-                    html: '<select id="reportando_mesa" name="reportando_mesa" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_colegio_mesa; ?></select>',
+                    html: '<select id="reportando_municipio2" name="reportando_municipio2" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_municipio2; ?></select>'+'<br /><br /><select id="reportando_mesa" name="reportando_mesa" class="form-control" style="position:absolute; z-index:2;"><?php echo $opt_colegio_mesa2; ?></select>',
                     showCancelButton: true,
                     confirmButtonText: 'Generar Reporte',
                     confirmButtonText: 'Submit',
                     
                 }).then(function(){
                     var reportando_mesa = document.getElementById('reportando_mesa').value;
-                    window.location.href = 'generar_reporte.php?tipo_reporte=mesa&reportando_mesa='+reportando_mesa;
+                    var reportando_municipio2 = document.getElementById('reportando_municipio2').value;
+                    window.location.href = 'generar_reporte.php?tipo_reporte=mesa&reportando_mesa='+reportando_mesa+'&reportando_municipio2='+reportando_municipio2;
   
                 });
 
                 $("#reportando_mesa").select2({
                     placeholder:"Seleccione la mesa",
+                    dropdownParent: jQuery('.swal-wide-3')
+                });
+                $("#reportando_municipio2").select2({
+                    placeholder:"Seleccione la municipio",
                     dropdownParent: jQuery('.swal-wide-3')
                 });
             });

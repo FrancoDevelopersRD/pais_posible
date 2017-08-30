@@ -48,7 +48,7 @@ $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posi
     if($_GET['tipo_reporte'] == 'mesa'){
 
     $link_pais_posible = mysqli_connect("localhost:3306", "root", "root", "pais_posible");
-    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE colegio_electoral = '".$_GET['reportando_mesa']."'");
+    $result_carnet = mysqli_query($link_pais_posible, "SELECT * FROM carnet WHERE municipio = '".$_GET['reportando_municipio2']."' AND colegio_electoral = '".$_GET['reportando_mesa']."'");
 
     }
 
@@ -136,6 +136,11 @@ $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_e
     $this->MultiCell(135,5,'MUNICIPIO: '.utf8_decode(strtoupper($municipio_exclusiva['municipio'])),0,'C',false);
     }
     if ($_GET['tipo_reporte'] == 'mesa') {
+        $link_datos_externos = mysqli_connect("localhost:3306", "root", "root", "datos_externos");
+
+    $result_municipio_exclusiva2 = mysqli_query($link_datos_externos, "SELECT descripcion AS municipio FROM municipio WHERE id = '".$_GET['reportando_municipio2']."'");
+    $municipio_exclusiva2 = mysqli_fetch_assoc($result_municipio_exclusiva2);
+    $this->MultiCell(135,5,'MUNICIPIO: '.utf8_decode(strtoupper($municipio_exclusiva2['municipio'])),0,'C',false);
     $this->MultiCell(135,5,'MESA: '.utf8_decode(strtoupper($_GET['reportando_mesa'])),0,'C',false);
     }
     if ($_GET['tipo_reporte'] == 'fecha') {

@@ -152,7 +152,8 @@ $link_quality = mysqli_connect("localhost:3306", "root", "root", "quality");
 
                 <!-- Navigation -->
                 <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-                    <img src="pais_posible.jpg" alt="" style="margin-left: -60px; width :5%; height :5%;">
+                    <img src="logo.jpg" alt="" style="margin-left: -130px; width :4%; height :4%; margin-top: 5px; margin-bottom: 5px;">
+                    <img src="nombre_pais_posible.jpg" alt="" style="width :12%; height :12%;">
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                             <span class="sr-only">Toggle navigation</span>
