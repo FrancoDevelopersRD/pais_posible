@@ -81,6 +81,7 @@ while ($row = mysqli_fetch_assoc($result_posicion)) {
     <meta name="author" content="">
 
     <title>PAÍS POSIBLE</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">

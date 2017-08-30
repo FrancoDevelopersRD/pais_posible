@@ -89,6 +89,7 @@ if(!empty($_GET['pruebaSweet'])){
     <meta name="author" content="">
 
     <title>PAÍS POSIBLE</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
      <!-- <link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/dataTables.bootstrap4.min.css">
